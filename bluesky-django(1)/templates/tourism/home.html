@@ -1,0 +1,192 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero" id="accueil">
+    <div class="hero-content">
+        <h1 class="fade-in">Découvrez le Monde avec Blue Sky tourism</h1>
+        <p class="fade-in">Des années d'expérience pour vous offrir les voyages de vos rêves</p>
+        
+        <form class="search-form fade-in" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="search_submit" value="1">
+            
+            <div class="form-group">
+                <label for="{{ search_form.destination.id_for_label }}">Destination</label>
+                {{ search_form.destination }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.departure_date.id_for_label }}">Date de départ</label>
+                {{ search_form.departure_date }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.duration.id_for_label }}">Durée</label>
+                {{ search_form.duration }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.travelers_count.id_for_label }}">Voyageurs</label>
+                {{ search_form.travelers_count }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.email.id_for_label }}">Email (optionnel)</label>
+                {{ search_form.email }}
+            </div>
+            <div class="form-group">
+                <label for="{{ search_form.phone.id_for_label }}">Téléphone (optionnel)</label>
+                {{ search_form.phone }}
+            </div>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Rechercher
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Destinations Section -->
+<section class="section" id="destinations">
+    <div class="container">
+        <h2 class="section-title">Nos Destinations Phares</h2>
+        <div class="destinations-grid">
+            {% for destination in destinations %}
+            <div class="destination-card" onclick="window.location.href='{% url 'tourism:destination_detail' destination.pk %}'">
+                <div class="destination-image">
+                    {% if destination.image %}
+                        <img src="{{ destination.image.url }}" alt="{{ destination.name }}">
+                    {% else %}
+                        <i class="{{ destination.icon_class }}"></i>
+                    {% endif %}
+                </div>
+                <div class="destination-info">
+                    <h3>{{ destination.name }}</h3>
+                    <p>Hôtels {{ destination.hotel_rating_display }} - {{ destination.duration_days }}J/{{ destination.duration_nights }}N - {{ destination.package_type }}</p>
+                    <p>Au départ de {{ destination.departure_city }}</p>
+                    {% if destination.hotels.count > 1 %}
+                        <p><small><i class="fas fa-hotel"></i> {{ destination.hotels.count }} hôtels disponibles</small></p>
+                    {% endif %}
+                    <div class="price">
+                        {% if destination.original_price > destination.current_price %}
+                            <span class="old-price">{{ destination.original_price }}€</span>
+                        {% endif %}
+                        {{ destination.current_price }}€*
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p>Aucune destination disponible pour le moment.</p>
+            {% endfor %}
+        </div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{% url 'tourism:destinations' %}" class="btn btn-primary">Voir toutes les destinations</a>
+        </div>
+    </div>
+</section>
+
+<!-- Clubs Section -->
+<section class="section clubs-section" id="clubs">
+    <div class="container">
+        <h2 class="section-title">L'Expérience BlueSky Club</h2>
+        <p style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem; color: #666;">
+            Profitez du meilleur de BlueSky : animation, service, restauration de qualité
+        </p>
+        
+        <div class="clubs-grid">
+            {% for service in club_services %}
+            <div class="club-card">
+                <div class="club-icon">
+                    <i class="{{ service.icon_class }}"></i>
+                </div>
+                <h3>{{ service.title }}</h3>
+                <p>{{ service.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Special Offers -->
+<section class="section offers-section">
+    <div class="container">
+        <h2 class="section-title" style="color: white;">Offres Spéciales</h2>
+        
+        <div class="offers-grid">
+            {% for offer in special_offers %}
+            <div class="offer-card">
+                <div class="offer-badge">{{ offer.badge_text }}</div>
+                <h3>{{ offer.title }}</h3>
+                <p>{{ offer.description }}</p>
+                {% if offer.conditions %}
+                    <p><strong>{{ offer.conditions }}</strong></p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Ce que disent nos clients</h2>
+        
+        <div class="testimonials-grid">
+            {% for testimonial in testimonials %}
+            <div class="testimonial">
+                <div class="testimonial-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stars">
+                    {% for star in testimonial.stars_range %}
+                        <i class="fas fa-star"></i>
+                    {% endfor %}
+                </div>
+                <p>"{{ testimonial.comment }}"</p>
+                <strong>{{ testimonial.client_name }} - {{ testimonial.client_city }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form Section -->
+<section class="section" style="background: #f8f9fa;">
+    <div class="container">
+        <h2 class="section-title">Contactez-nous</h2>
+        <div style="max-width: 600px; margin: 0 auto;">
+            <form method="post" class="contact-form">
+                {% csrf_token %}
+                <input type="hidden" name="contact_submit" value="1">
+                
+                <div class="form-group">
+                    <label for="{{ contact_form.name.id_for_label }}">Nom complet</label>
+                    {{ contact_form.name }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ contact_form.email.id_for_label }}">Email</label>
+                    {{ contact_form.email }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ contact_form.phone.id_for_label }}">Téléphone</label>
+                    {{ contact_form.phone }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ contact_form.subject.id_for_label }}">Sujet</label>
+                    {{ contact_form.subject }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ contact_form.message.id_for_label }}">Message</label>
+                    {{ contact_form.message }}
+                </div>
+                
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-paper-plane"></i> Envoyer le message
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

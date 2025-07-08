@@ -1,0 +1,193 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}{{ destination.name }} - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="section" style="margin-top: 80px;">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav style="margin-bottom: 2rem;">
+            <a href="{% url 'tourism:home' %}" style="color: #2a5298; text-decoration: none;">Accueil</a>
+            <span style="margin: 0 0.5rem; color: #ccc;">/</span>
+            <a href="{% url 'tourism:destinations' %}" style="color: #2a5298; text-decoration: none;">Destinations</a>
+            <span style="margin: 0 0.5rem; color: #ccc;">/</span>
+            <span>{{ destination.name }}</span>
+        </nav>
+
+        <div style="display: grid; grid-template-columns: 1fr 400px; gap: 3rem; align-items: start;">
+            <!-- Contenu principal -->
+            <div>
+                <h1 style="color: #2a5298; margin-bottom: 1rem;">{{ destination.name }}</h1>
+                
+                <div class="destination-image" style="height: 400px; margin-bottom: 2rem; border-radius: 15px; overflow: hidden; background: linear-gradient(45deg, #007acc, #005999); display: flex; align-items: center; justify-content: center; color: white;">
+                    {% if destination.image %}
+                        <img src="{{ destination.image.url }}" alt="{{ destination.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <i class="{{ destination.icon_class }}" style="font-size: 6rem;"></i>
+                    {% endif %}
+                </div>
+
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                    <h2 style="color: #2a5298; margin-bottom: 1rem;">Détails du séjour</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <strong>Destination:</strong><br>
+                            {{ destination.location }}
+                        </div>
+                        <div>
+                            <strong>Hôtels:</strong><br>
+                            {{ destination.hotels.count }} hôtel{% if destination.hotels.count > 1 %}s{% endif %} ({{ destination.hotel_rating_display }})
+                        </div>
+                        <div>
+                            <strong>Durée:</strong><br>
+                            {{ destination.duration_days }} jours / {{ destination.duration_nights }} nuits
+                        </div>
+                        <div>
+                            <strong>Formule:</strong><br>
+                            {{ destination.package_type }}
+                        </div>
+                        <div>
+                            <strong>Départ:</strong><br>
+                            {{ destination.departure_city }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations sur les hôtels -->
+                {% if destination.hotels.exists %}
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                    <h2 style="color: #2a5298; margin-bottom: 1rem;">
+                        {% if destination.hotels.count == 1 %}
+                            Votre hôtel
+                        {% else %}
+                            Nos hôtels partenaires ({{ destination.hotels.count }})
+                        {% endif %}
+                    </h2>
+                    
+                    <div style="display: grid; gap: 2rem;">
+                        {% for hotel in destination.hotels.all %}
+                        <div style="border: 1px solid #e9ecef; border-radius: 10px; padding: 1.5rem;">
+                            <div style="display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start;">
+                                {% if hotel.image %}
+                                <div style="width: 120px; height: 80px; border-radius: 8px; overflow: hidden;">
+                                    <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                {% endif %}
+                                
+                                <div>
+                                    <h3 style="color: #2a5298; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        {{ hotel.name }}
+                                        <div style="color: #ffd700;">
+                                            <!-- Affichage des étoiles sans filtre -->
+                                            {% if hotel.rating == 1 %}<i class="fas fa-star"></i>{% endif %}
+                                            {% if hotel.rating == 2 %}<i class="fas fa-star"></i><i class="fas fa-star"></i>{% endif %}
+                                            {% if hotel.rating == 3 %}<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>{% endif %}
+                                            {% if hotel.rating == 4 %}<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>{% endif %}
+                                            {% if hotel.rating == 5 %}<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>{% endif %}
+                                        </div>
+                                    </h3>
+                                    
+                                    {% if hotel.description %}
+                                        <p style="margin-bottom: 1rem; color: #666;">{{ hotel.description }}</p>
+                                    {% endif %}
+                                    
+                                    {% if hotel.amenities_list %}
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                            {% for amenity in hotel.amenities_list|slice:":5" %}
+                                                <span style="background: #e9ecef; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.8rem;">{{ amenity }}</span>
+                                            {% endfor %}
+                                            {% if hotel.amenities_list|length > 5 %}
+                                                <span style="color: #666; font-size: 0.8rem;">+{{ hotel.amenities_list|length|add:"-5" }} autres</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Informations supplémentaires -->
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 15px;">
+                    <h3 style="color: #2a5298; margin-bottom: 1rem;">Ce qui est inclus</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Vol aller-retour</li>
+                        
+                        <!-- Affichage des hôtels dans "Ce qui est inclus" -->
+                        {% if destination.hotels.exists %}
+                            {% if destination.hotels.count == 1 %}
+                                {% for hotel in destination.hotels.all %}
+                                    <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Hébergement au {{ hotel.name }} ({{ hotel.rating }}*)</li>
+                                {% endfor %}
+                            {% else %}
+                                <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Hébergement dans l'un de nos hôtels partenaires :</li>
+                                {% for hotel in destination.hotels.all %}
+                                    <li style="margin-bottom: 0.5rem; margin-left: 1.5rem;"><i class="fas fa-hotel" style="color: #2a5298; margin-right: 0.5rem;"></i> {{ hotel.name }} ({{ hotel.rating }}*)</li>
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Hébergement en hôtel</li>
+                        {% endif %}
+                        
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> {{ destination.package_type }}</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Transferts aéroport-hôtel</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Assistance 24h/24</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Animations et activités</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sidebar de réservation -->
+            <div style="position: sticky; top: 100px;">
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="price" style="text-align: center; margin-bottom: 2rem;">
+                        {% if destination.original_price > destination.current_price %}
+                            <div style="font-size: 1rem; color: #999; text-decoration: line-through;">{{ destination.original_price }}€</div>
+                            <div style="background: #dc3545; color: white; padding: 5px 10px; border-radius: 15px; display: inline-block; margin: 0.5rem 0; font-size: 0.9rem;">
+                                -{{ destination.discount_percentage }}% de réduction
+                            </div>
+                        {% endif %}
+                        <div style="font-size: 2.5rem; font-weight: bold; color: #ff6b35;">{{ destination.current_price }}€</div>
+                        <div style="font-size: 0.9rem; color: #666;">par personne</div>
+                    </div>
+
+                    <form style="margin-bottom: 2rem;">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label>Date de départ</label>
+                            <input type="date" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label>Nombre de voyageurs</label>
+                            <select style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                                <option value="1">1 personne</option>
+                                <option value="2" selected>2 personnes</option>
+                                <option value="3">3 personnes</option>
+                                <option value="4">4 personnes</option>
+                                <option value="5+">5+ personnes</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="search-btn" style="width: 100%; margin: 0;">
+                            <i class="fas fa-calendar-check"></i> Réserver maintenant
+                        </button>
+                    </form>
+
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <small style="color: #666;">ou</small>
+                    </div>
+
+                    <a href="tel:0491354415" style="display: block; text-align: center; background: #28a745; color: white; padding: 12px; border-radius: 8px; text-decoration: none; margin-bottom: 1rem;">
+                        <i class="fas fa-phone"></i> Appelez-nous: 04 91 35 44 15
+                    </a>
+
+                    <div style="font-size: 0.8rem; color: #666; text-align: center;">
+                        <i class="fas fa-undo"></i> Annulation gratuite jusqu'à 7 jours
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

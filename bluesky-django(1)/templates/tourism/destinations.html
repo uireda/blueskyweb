@@ -1,0 +1,93 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}Destinations - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="section" style="margin-top: 80px;">
+    <div class="container">
+        <h1 class="section-title">Toutes nos Destinations</h1>
+        
+        <!-- Filtres -->
+        <div class="filters-section" style="background: #f8f9fa; padding: 2rem; border-radius: 15px; margin-bottom: 3rem;">
+            <form method="get" class="filters-form">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                    <div class="form-group">
+                        <label for="destination">Filtrer par destination</label>
+                        <input type="text" name="destination" id="destination" 
+                               value="{{ request.GET.destination }}" 
+                               placeholder="Ex: Tunisie, Grèce..."
+                               style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label for="max_price">Prix maximum</label>
+                        <input type="number" name="max_price" id="max_price" 
+                               value="{{ request.GET.max_price }}" 
+                               placeholder="Ex: 1000"
+                               style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                    </div>
+                    <button type="submit" class="btn-primary" style="height: fit-content;">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                    <a href="{% url 'tourism:destinations' %}" style="height: fit-content; text-decoration: none; background: #6c757d; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                        <i class="fas fa-times"></i> Effacer
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Grille des destinations -->
+        <div class="destinations-grid">
+            {% for destination in destinations %}
+            <div class="destination-card" onclick="window.location.href='{% url 'tourism:destination_detail' destination.pk %}'">
+                <div class="destination-image">
+                    {% if destination.image %}
+                        <img src="{{ destination.image.url }}" alt="{{ destination.name }}">
+                    {% else %}
+                        <i class="{{ destination.icon_class }}"></i>
+                    {% endif %}
+                </div>
+                <div class="destination-info">
+                    <h3>{{ destination.name }}</h3>
+                    <p>{{ destination.hotel.name }} ({{ destination.hotel.rating }}*) - {{ destination.duration_days }}J/{{ destination.duration_nights }}N - {{ destination.package_type }}</p>
+                    <p>Au départ de {{ destination.departure_city }}</p>
+                    <div class="price">
+                        {% if destination.original_price > destination.current_price %}
+                            <span class="old-price">{{ destination.original_price }}€</span>
+                            <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 0.5rem;">-{{ destination.discount_percentage }}%</span>
+                        {% endif %}
+                        {{ destination.current_price }}€*
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <h3>Aucune destination trouvée</h3>
+                <p>Essayez de modifier vos critères de recherche.</p>
+                <a href="{% url 'tourism:destinations' %}" class="btn-primary">Voir toutes les destinations</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div style="display: flex; justify-content: center; margin-top: 3rem; gap: 0.5rem;">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.destination %}&destination={{ request.GET.destination }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" style="padding: 10px 15px; border: 1px solid #ddd; color: #2a5298; text-decoration: none; border-radius: 5px;">&laquo; Premier</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.destination %}&destination={{ request.GET.destination }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" style="padding: 10px 15px; border: 1px solid #ddd; color: #2a5298; text-decoration: none; border-radius: 5px;">Précédent</a>
+            {% endif %}
+
+            <span style="padding: 10px 15px; background: #2a5298; color: white; border-radius: 5px;">
+                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.destination %}&destination={{ request.GET.destination }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" style="padding: 10px 15px; border: 1px solid #ddd; color: #2a5298; text-decoration: none; border-radius: 5px;">Suivant</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.destination %}&destination={{ request.GET.destination }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" style="padding: 10px 15px; border: 1px solid #ddd; color: #2a5298; text-decoration: none; border-radius: 5px;">Dernier &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

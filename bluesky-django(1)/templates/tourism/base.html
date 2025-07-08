@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Blue Sky Tourism - Votre Agence de Voyages de Confiance{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'tourism/css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-plane" style="margin-right: 10px;"></i> Blue Sky Tourism
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="{% url 'tourism:home' %}#accueil">Accueil</a></li>
+                    <li><a href="{% url 'tourism:destinations' %}">Destinations</a></li>
+                    <li><a href="{% url 'tourism:clubs' %}">Nos Clubs</a></li>
+                    <li><a href="{% url 'tourism:offers' %}">Offres</a></li>
+                    <li><a href="{% url 'tourism:home' %}#contact">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="contact-info">
+                <i class="fas fa-phone"></i> 01 70 365 000
+            </div>
+        </div>
+    </header>
+
+    <!-- Messages Django -->
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <button type="button" class="close-alert">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Contenu principal -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Blue Sky Tourism</h3>
+                    <p>Votre agence de confiance depuis des années</p>
+                    <p><i class="fas fa-phone"></i> 01 70 365 000</p>
+                    <p><i class="fas fa-envelope"></i> bluesky13001@gmail.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Avenue des Voyages, 75001 Paris</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Nos Services</h3>
+                    <a href="#">Séjours tout inclus</a>
+                    <a href="#">Circuits organisés</a>
+                    <a href="#">Voyages sur mesure</a>
+                    <a href="#">Week-ends</a>
+                    <a href="#">Voyages de noces</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Destinations</h3>
+                    <a href="{% url 'tourism:destinations' %}">Europe</a>
+                    <a href="{% url 'tourism:destinations' %}">Méditerranée</a>
+                    <a href="{% url 'tourism:destinations' %}">Océan Indien</a>
+                    <a href="{% url 'tourism:destinations' %}">Caraïbes</a>
+                    <a href="{% url 'tourism:destinations' %}">Afrique</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Informations</h3>
+                    <a href="#">Conditions générales</a>
+                    <a href="#">Assurances voyage</a>
+                    <a href="#">Conseils aux voyageurs</a>
+                    <a href="#">Formalités</a>
+                    <a href="#">Blog voyage</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Blue Sky Tourism. Tous droits réservés. | Licence d'agence de voyage n° IM075110000</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'tourism/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
