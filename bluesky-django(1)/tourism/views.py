@@ -3,10 +3,10 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt  # Correction ici
 from django.views.generic import ListView, DetailView
 from .models import Destination, ClubService, SpecialOffer, Testimonial
-from .forms import SearchForm, ContactForm
+from .forms import SearchForm, ContactForm, ReservationForm
 import json
 
 def home_view(request):
@@ -95,8 +95,35 @@ class DestinationListView(ListView):
 class DestinationDetailView(DetailView):
     """Vue pour les détails d'une destination"""
     model = Destination
-    template_name = 'tourism/destination_detail.html'
+    template_name = 'tourism/destination_detail_simple.html'
     context_object_name = 'destination'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['reservation_form'] = ReservationForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        reservation_form = ReservationForm(request.POST)
+        
+        if reservation_form.is_valid():
+            reservation = reservation_form.save(commit=False)
+            reservation.destination = self.object
+            # Calculer le prix estimé
+            reservation.total_estimated_price = self.object.current_price * reservation.travelers_count
+            reservation.save()
+            
+            messages.success(request, 
+                f'Votre demande de réservation pour {self.object.name} a été envoyée avec succès ! '
+                f'Nous vous contacterons dans les plus brefs délais.')
+            return redirect('tourism:destination_detail', pk=self.object.pk)
+        else:
+            messages.error(request, 'Erreur dans le formulaire. Veuillez vérifier vos informations.')
+        
+        context = self.get_context_data()
+        context['reservation_form'] = reservation_form
+        return self.render_to_response(context)
 
 def clubs_view(request):
     """Vue pour la page des clubs"""

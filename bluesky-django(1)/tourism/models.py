@@ -144,6 +144,40 @@ class Testimonial(models.Model):
     def stars_range(self):
         return range(self.rating)
 
+class Reservation(models.Model):
+    RESERVATION_STATUS = [
+        ('pending', 'En attente'),
+        ('confirmed', 'Confirmée'),
+        ('cancelled', 'Annulée'),
+    ]
+
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, verbose_name="Destination")
+    client_name = models.CharField(max_length=200, verbose_name="Nom complet")
+    client_email = models.EmailField(verbose_name="Email")
+    client_phone = models.CharField(max_length=20, verbose_name="Téléphone")
+    departure_date = models.DateField(verbose_name="Date de départ souhaitée")
+    travelers_count = models.IntegerField(verbose_name="Nombre de voyageurs")
+    hotel_preference = models.CharField(max_length=200, blank=True, verbose_name="Préférence d'hôtel")
+    special_requests = models.TextField(blank=True, verbose_name="Demandes spéciales")
+    status = models.CharField(max_length=20, choices=RESERVATION_STATUS, default='pending', verbose_name="Statut")
+    total_estimated_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Prix estimé total")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Réservation"
+        verbose_name_plural = "Réservations"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Réservation {self.client_name} - {self.destination.name} ({self.get_status_display()})"
+
+    @property
+    def estimated_total(self):
+        if self.destination:
+            return self.destination.current_price * self.travelers_count
+        return 0
+
 class SearchQuery(models.Model):
     DESTINATIONS_CHOICES = [
         ('tunisie', 'Tunisie'),

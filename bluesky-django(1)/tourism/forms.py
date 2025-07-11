@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from datetime import date, timedelta
-from .models import SearchQuery
+from .models import SearchQuery, Reservation
 
 class SearchForm(forms.ModelForm):
     class Meta:
@@ -82,3 +82,50 @@ class ContactForm(forms.Form):
             'placeholder': 'Votre message'
         })
     )
+
+class ReservationForm(forms.ModelForm):
+    class Meta:
+        model = Reservation
+        fields = ['client_name', 'client_email', 'client_phone', 'departure_date', 
+                 'travelers_count', 'hotel_preference', 'special_requests']
+        widgets = {
+            'client_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Votre nom complet'
+            }),
+            'client_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Votre email'
+            }),
+            'client_phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Votre téléphone'
+            }),
+            'departure_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'travelers_count': forms.Select(
+                choices=[(i, f"{i} personne{'s' if i > 1 else ''}") for i in range(1, 11)],
+                attrs={
+                    'class': 'form-control'
+                }
+            ),
+            'hotel_preference': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Hôtel préféré (optionnel)'
+            }),
+            'special_requests': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Demandes spéciales (optionnel)'
+            })
+        }
+
+    def clean_departure_date(self):
+        departure_date = self.cleaned_data['departure_date']
+        if departure_date < date.today():
+            raise ValidationError("La date de départ ne peut pas être dans le passé.")
+        if departure_date > date.today() + timedelta(days=365):
+            raise ValidationError("La date de départ ne peut pas être plus d'un an dans le futur.")
+        return departure_date

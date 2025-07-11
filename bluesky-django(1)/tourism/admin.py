@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Destination, ClubService, SpecialOffer, Testimonial, SearchQuery, Hotel
+from .models import Destination, ClubService, SpecialOffer, Testimonial, SearchQuery, Hotel, Reservation
 
 @admin.register(Hotel)
 class HotelAdmin(admin.ModelAdmin):
@@ -95,3 +95,33 @@ class SearchQueryAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         return False  # Empêcher l'ajout manuel depuis l'admin
+
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ['client_name', 'destination', 'departure_date', 'travelers_count', 'status', 'total_estimated_price', 'created_at']
+    list_filter = ['status', 'departure_date', 'destination', 'created_at']
+    search_fields = ['client_name', 'client_email', 'client_phone', 'destination__name']
+    list_editable = ['status']
+    readonly_fields = ['created_at', 'updated_at', 'estimated_total']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Informations client', {
+            'fields': ('client_name', 'client_email', 'client_phone')
+        }),
+        ('Détails du voyage', {
+            'fields': ('destination', 'departure_date', 'travelers_count', 'hotel_preference')
+        }),
+        ('Demandes et prix', {
+            'fields': ('special_requests', 'total_estimated_price', 'estimated_total')
+        }),
+        ('Statut et dates', {
+            'fields': ('status', 'created_at', 'updated_at')
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        # Calculer le prix estimé automatiquement
+        if obj.destination and obj.travelers_count:
+            obj.total_estimated_price = obj.destination.current_price * obj.travelers_count
+        super().save_model(request, obj, form, change)

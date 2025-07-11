@@ -238,4 +238,67 @@
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script chargé pour la page destination');
+    
+    // Fonction pour afficher le formulaire
+    function showReservationForm() {
+        console.log('Fonction showReservationForm appelée');
+        const form = document.getElementById('reservationForm');
+        const btn = document.getElementById('showReservationForm');
+        
+        if (form && btn) {
+            console.log('Éléments trouvés, affichage du formulaire');
+            form.style.display = 'block';
+            btn.style.display = 'none';
+            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            console.log('Éléments non trouvés:', { form, btn });
+        }
+    }
+    
+    // Fonction pour masquer le formulaire
+    function hideReservationForm() {
+        console.log('Fonction hideReservationForm appelée');
+        const form = document.getElementById('reservationForm');
+        const btn = document.getElementById('showReservationForm');
+        
+        if (form && btn) {
+            form.style.display = 'none';
+            btn.style.display = 'block';
+        }
+    }
+    
+    // Attacher les événements
+    const showBtn = document.getElementById('showReservationForm');
+    const hideBtn = document.getElementById('hideReservationForm');
+    
+    console.log('Boutons trouvés:', { showBtn, hideBtn });
+    
+    if (showBtn) {
+        showBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Clic sur le bouton Réserver maintenant');
+            showReservationForm();
+        });
+    }
+    
+    if (hideBtn) {
+        hideBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Clic sur le bouton Annuler');
+            hideReservationForm();
+        });
+    }
+    
+    // Définir la date minimum à aujourd'hui
+    const departureDateInput = document.querySelector('input[name="departure_date"]');
+    if (departureDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        departureDateInput.setAttribute('min', today);
+    }
+});
+</script>
 {% endblock %}

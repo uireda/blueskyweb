@@ -99,6 +99,75 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileMenuBtn.onclick = toggleMobileMenu
     navContainer.appendChild(mobileMenuBtn)
   }
+
+  // Gestion du formulaire de réservation - Version corrigée
+  console.log("Recherche des éléments du formulaire de réservation...")
+
+  const showFormBtn = document.getElementById("showReservationForm")
+  const hideFormBtn = document.getElementById("hideReservationForm")
+  const reservationForm = document.getElementById("reservationForm")
+
+  console.log("showFormBtn:", showFormBtn)
+  console.log("hideFormBtn:", hideFormBtn)
+  console.log("reservationForm:", reservationForm)
+
+  if (showFormBtn) {
+    showFormBtn.addEventListener("click", (e) => {
+      e.preventDefault()
+      console.log("Bouton cliqué!")
+
+      if (reservationForm) {
+        reservationForm.style.display = "block"
+        showFormBtn.style.display = "none"
+        // Scroll vers le formulaire
+        reservationForm.scrollIntoView({ behavior: "smooth", block: "nearest" })
+      }
+    })
+  } else {
+    console.log("Bouton showReservationForm non trouvé!")
+  }
+
+  if (hideFormBtn) {
+    hideFormBtn.addEventListener("click", (e) => {
+      e.preventDefault()
+      console.log("Bouton annuler cliqué!")
+
+      if (reservationForm) {
+        reservationForm.style.display = "none"
+        if (showFormBtn) {
+          showFormBtn.style.display = "block"
+        }
+      }
+    })
+  }
+
+  // Calculer le prix total en temps réel
+  const travelersSelect = document.querySelector('select[name="travelers_count"]')
+  const priceDisplay = document.querySelector(".price")
+
+  if (travelersSelect && priceDisplay) {
+    // Récupérer le prix de base depuis l'élément HTML
+    const priceElement = priceDisplay.querySelector('div[style*="font-size: 2.5rem"]')
+    if (priceElement) {
+      const basePriceText = priceElement.textContent.replace("€", "").trim()
+      const basePrice = Number.parseFloat(basePriceText) || 0
+
+      travelersSelect.addEventListener("change", function () {
+        const travelers = Number.parseInt(this.value) || 1
+        const totalPrice = basePrice * travelers
+
+        // Mettre à jour l'affichage du prix
+        priceElement.innerHTML = totalPrice + '€ <small style="font-size: 0.6em;">total</small>'
+      })
+    }
+  }
+
+  // Définir la date minimum à aujourd'hui pour le formulaire de réservation
+  const departureDateInput = document.querySelector('input[name="departure_date"]')
+  if (departureDateInput) {
+    const today = new Date().toISOString().split("T")[0]
+    departureDateInput.setAttribute("min", today)
+  }
 })
 
 // Function to format currency
@@ -116,3 +185,40 @@ function calculateDiscount(original, current) {
   }
   return 0
 }
+
+// Version alternative si les IDs ne fonctionnent pas
+document.addEventListener("click", (e) => {
+  // Gestion du bouton "Réserver maintenant"
+  if (
+    e.target.textContent.includes("Réserver maintenant") ||
+    e.target.closest("button")?.textContent.includes("Réserver maintenant")
+  ) {
+    e.preventDefault()
+    console.log("Bouton réserver détecté via event delegation!")
+
+    const form = document.querySelector('div[id="reservationForm"], div[style*="display: none"]')
+    const btn = e.target.closest("button")
+
+    if (form && btn) {
+      form.style.display = "block"
+      btn.style.display = "none"
+      form.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    }
+  }
+
+  // Gestion du bouton "Annuler"
+  if (e.target.textContent.includes("Annuler") || e.target.closest("button")?.textContent.includes("Annuler")) {
+    e.preventDefault()
+    console.log("Bouton annuler détecté!")
+
+    const form = e.target.closest("div").querySelector("form").parentElement
+    const showBtn = document.querySelector('button[style*="display: none"]')
+
+    if (form) {
+      form.style.display = "none"
+    }
+    if (showBtn) {
+      showBtn.style.display = "block"
+    }
+  }
+})
