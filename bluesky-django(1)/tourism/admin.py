@@ -1,127 +1,159 @@
 from django.contrib import admin
-from .models import Destination, ClubService, SpecialOffer, Testimonial, SearchQuery, Hotel, Reservation
+from django.utils.html import format_html
+from .models import (
+    Hotel, Destination, TravelOffer, OfferReservation, Payment,
+    ClubService, SpecialOffer, Testimonial, Reservation, SearchQuery
+)
 
 @admin.register(Hotel)
 class HotelAdmin(admin.ModelAdmin):
-    list_display = ['name', 'rating', 'address', 'phone', 'is_active', 'created_at']
-    list_filter = ['rating', 'is_active', 'created_at']
-    search_fields = ['name', 'address', 'phone', 'email']
+    list_display = ['name', 'rating', 'address', 'is_active']
+    list_filter = ['rating', 'is_active']
+    search_fields = ['name', 'address']
     list_editable = ['is_active']
-    ordering = ['name']
-    
-    fieldsets = (
-        ('Informations générales', {
-            'fields': ('name', 'rating', 'description')
-        }),
-        ('Contact', {
-            'fields': ('address', 'phone', 'email', 'website')
-        }),
-        ('Équipements et médias', {
-            'fields': ('amenities', 'image')
-        }),
-        ('Statut', {
-            'fields': ('is_active',)
-        }),
-    )
 
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'location', 'get_hotels', 'current_price', 'original_price', 'is_featured', 'created_at']
-    list_filter = ['is_featured', 'departure_city', 'created_at', 'hotels']
-    search_fields = ['name', 'location', 'departure_city', 'hotels__name']
-    list_editable = ['is_featured', 'current_price']
-    ordering = ['-created_at']
-    filter_horizontal = ['hotels']  # Interface pour sélectionner plusieurs hôtels
+    list_display = ['name', 'location', 'current_price', 'is_featured', 'created_at']
+    list_filter = ['is_featured', 'package_type', 'departure_city']
+    search_fields = ['name', 'location']
+    list_editable = ['is_featured']
+    filter_horizontal = ['hotels']
+
+@admin.register(TravelOffer)
+class TravelOfferAdmin(admin.ModelAdmin):
+    list_display = ['title', 'destination', 'departure_date', 'offer_price', 'max_participants', 'available_spots_display', 'is_active', 'is_featured']
+    list_filter = ['offer_type', 'is_active', 'is_featured', 'departure_date']
+    search_fields = ['title', 'destination__name']
+    list_editable = ['is_active', 'is_featured']
+    date_hierarchy = 'departure_date'
     
-    def get_hotels(self, obj):
-        return ", ".join([f"{hotel.name} ({hotel.rating}*)" for hotel in obj.hotels.all()[:3]])
-    get_hotels.short_description = 'Hôtels'
+    def available_spots_display(self, obj):
+        return f"{obj.available_spots}/{obj.max_participants}"
+    available_spots_display.short_description = "Places disponibles"
     
     fieldsets = (
         ('Informations générales', {
-            'fields': ('name', 'location', 'hotels', 'package_type', 'departure_city')
+            'fields': ('title', 'description', 'destination', 'offer_type', 'image')
         }),
-        ('Durée et prix', {
-            'fields': ('duration_days', 'duration_nights', 'original_price', 'current_price')
+        ('Dates', {
+            'fields': ('departure_date', 'return_date', 'booking_deadline')
         }),
-        ('Affichage', {
-            'fields': ('image', 'icon_class', 'is_featured')
+        ('Prix et participants', {
+            'fields': ('original_price', 'offer_price', 'max_participants', 'min_participants')
         }),
+        ('Acompte', {
+            'fields': ('deposit_percentage', 'deposit_amount'),
+            'description': 'Configurez soit un pourcentage, soit un montant fixe d\'acompte'
+        }),
+        ('Services', {
+            'fields': ('included_services', 'excluded_services', 'conditions'),
+            'classes': ('collapse',)
+        }),
+        ('Statut', {
+            'fields': ('is_active', 'is_featured')
+        })
+    )
+
+@admin.register(OfferReservation)
+class OfferReservationAdmin(admin.ModelAdmin):
+    list_display = ['client_name', 'offer', 'participants_count', 'total_price', 'deposit_amount', 'status', 'created_at']
+    list_filter = ['status', 'payment_type', 'created_at']
+    search_fields = ['client_name', 'client_email', 'offer__title']
+    readonly_fields = ['total_price', 'deposit_amount', 'remaining_amount']
+    
+    fieldsets = (
+        ('Réservation', {
+            'fields': ('offer', 'participants_count', 'special_requests')
+        }),
+        ('Client', {
+            'fields': ('client_name', 'client_email', 'client_phone')
+        }),
+        ('Paiement', {
+            'fields': ('payment_type', 'total_price', 'deposit_amount', 'remaining_amount', 'status'),
+            'classes': ('collapse',)
+        }),
+        ('Stripe', {
+            'fields': ('stripe_payment_intent_id', 'stripe_customer_id', 'payment_status', 'paid_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['get_client_name', 'amount', 'status', 'is_deposit', 'get_reservation_info', 'created_at']
+    list_filter = ['status', 'is_deposit', 'currency', 'created_at']
+    search_fields = ['stripe_payment_intent_id', 'offer_reservation__client_name', 'reservation__client_name']
+    readonly_fields = ['stripe_payment_intent_id', 'stripe_client_secret', 'created_at', 'updated_at']
+    
+    def get_client_name(self, obj):
+        if obj.offer_reservation:
+            return obj.offer_reservation.client_name
+        elif obj.reservation:
+            return obj.reservation.client_name
+        return "N/A"
+    get_client_name.short_description = "Client"
+    
+    def get_reservation_info(self, obj):
+        if obj.offer_reservation:
+            return format_html(
+                '<strong>{}</strong><br><small>{} participants</small>',
+                obj.offer_reservation.offer.title,
+                obj.offer_reservation.participants_count
+            )
+        elif obj.reservation:
+            return format_html(
+                '<strong>{}</strong><br><small>{} voyageurs</small>',
+                obj.reservation.destination.name,
+                obj.reservation.travelers_count
+            )
+        return "N/A"
+    get_reservation_info.short_description = "Réservation"
+    
+    fieldsets = (
+        ('Paiement', {
+            'fields': ('amount', 'currency', 'status', 'is_deposit')
+        }),
+        ('Réservations liées', {
+            'fields': ('offer_reservation', 'reservation'),
+            'description': 'Une seule des deux doit être remplie'
+        }),
+        ('Stripe', {
+            'fields': ('stripe_payment_intent_id', 'stripe_client_secret', 'payment_method_id'),
+            'classes': ('collapse',)
+        }),
+        ('Dates', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
     )
 
 @admin.register(ClubService)
 class ClubServiceAdmin(admin.ModelAdmin):
-    list_display = ['title', 'is_active', 'order']
-    list_filter = ['is_active']
-    search_fields = ['title', 'description']
-    list_editable = ['is_active', 'order']
+    list_display = ['title', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
     ordering = ['order']
 
 @admin.register(SpecialOffer)
 class SpecialOfferAdmin(admin.ModelAdmin):
-    list_display = ['title', 'offer_type', 'badge_text', 'valid_until', 'is_active', 'created_at']
-    list_filter = ['offer_type', 'is_active', 'valid_until']
-    search_fields = ['title', 'description']
+    list_display = ['title', 'offer_type', 'badge_text', 'valid_until', 'is_active']
+    list_filter = ['offer_type', 'is_active']
     list_editable = ['is_active']
-    ordering = ['-created_at']
-    
-    fieldsets = (
-        ('Informations de l\'offre', {
-            'fields': ('title', 'offer_type', 'badge_text')
-        }),
-        ('Contenu', {
-            'fields': ('description', 'conditions')
-        }),
-        ('Validité', {
-            'fields': ('valid_until', 'is_active')
-        }),
-    )
 
 @admin.register(Testimonial)
 class TestimonialAdmin(admin.ModelAdmin):
     list_display = ['client_name', 'client_city', 'rating', 'is_featured', 'created_at']
-    list_filter = ['rating', 'is_featured', 'created_at']
-    search_fields = ['client_name', 'client_city', 'comment']
+    list_filter = ['rating', 'is_featured']
     list_editable = ['is_featured']
-    ordering = ['-created_at']
-
-@admin.register(SearchQuery)
-class SearchQueryAdmin(admin.ModelAdmin):
-    list_display = ['destination', 'departure_date', 'duration', 'travelers_count', 'email', 'created_at']
-    list_filter = ['destination', 'duration', 'departure_date']
-    search_fields = ['email', 'phone']
-    readonly_fields = ['created_at']
-    ordering = ['-created_at']
-    
-    def has_add_permission(self, request):
-        return False  # Empêcher l'ajout manuel depuis l'admin
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ['client_name', 'destination', 'departure_date', 'travelers_count', 'status', 'total_estimated_price', 'created_at']
-    list_filter = ['status', 'departure_date', 'destination', 'created_at']
-    search_fields = ['client_name', 'client_email', 'client_phone', 'destination__name']
-    list_editable = ['status']
-    readonly_fields = ['created_at', 'updated_at', 'estimated_total']
-    ordering = ['-created_at']
-    
-    fieldsets = (
-        ('Informations client', {
-            'fields': ('client_name', 'client_email', 'client_phone')
-        }),
-        ('Détails du voyage', {
-            'fields': ('destination', 'departure_date', 'travelers_count', 'hotel_preference')
-        }),
-        ('Demandes et prix', {
-            'fields': ('special_requests', 'total_estimated_price', 'estimated_total')
-        }),
-        ('Statut et dates', {
-            'fields': ('status', 'created_at', 'updated_at')
-        }),
-    )
+    list_display = ['client_name', 'destination', 'departure_date', 'travelers_count', 'status', 'created_at']
+    list_filter = ['status', 'departure_date']
+    search_fields = ['client_name', 'client_email', 'destination__name']
 
-    def save_model(self, request, obj, form, change):
-        # Calculer le prix estimé automatiquement
-        if obj.destination and obj.travelers_count:
-            obj.total_estimated_price = obj.destination.current_price * obj.travelers_count
-        super().save_model(request, obj, form, change)
+@admin.register(SearchQuery)
+class SearchQueryAdmin(admin.ModelAdmin):
+    list_display = ['destination', 'departure_date', 'duration', 'travelers_count', 'created_at']
+    list_filter = ['destination', 'duration']
+    readonly_fields = ['created_at']

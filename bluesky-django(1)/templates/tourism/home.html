@@ -1,5 +1,6 @@
 {% extends 'tourism/base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -42,6 +43,69 @@
         </form>
     </div>
 </section>
+
+<!-- Offres Vedettes -->
+{% if featured_travel_offers %}
+<section class="section" style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white;">
+    <div class="container">
+        <h2 class="section-title" style="color: white;">Offres Exceptionnelles</h2>
+        <p style="text-align: center; font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">
+            Dates et prix fixes - Places limitées
+        </p>
+        
+        <div class="destinations-grid">
+            {% for offer in featured_travel_offers %}
+            <div class="destination-card" onclick="window.location.href='{% url 'tourism:offer_detail' offer.pk %}'" style="transform: translateY(0); box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+                <div class="destination-image" style="position: relative;">
+                    {% if offer.image %}
+                        <img src="{{ offer.image.url }}" alt="{{ offer.title }}">
+                    {% elif offer.destination.image %}
+                        <img src="{{ offer.destination.image.url }}" alt="{{ offer.title }}">
+                    {% else %}
+                        <i class="{{ offer.destination.icon_class }}"></i>
+                    {% endif %}
+                    
+                    <div style="position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); color: #ff6b35; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">
+                        {{ offer.get_offer_type_display }}
+                    </div>
+                    
+                    {% if offer.available_spots <= 5 %}
+                    <div style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">
+                        {{ offer.available_spots }} places
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="destination-info">
+                    <h3>{{ offer.title }}</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> {{ offer.destination.name }}</p>
+                    <p><i class="fas fa-calendar"></i> {{ offer.departure_date }} - {{ offer.return_date }}</p>
+                    <p><i class="fas fa-clock"></i> {{ offer.duration_days }}J/{{ offer.duration_nights }}N</p>
+                    
+                    <div class="price">
+                        {% if offer.original_price > offer.offer_price %}
+                            <span class="old-price">{{ offer.original_price }}€</span>
+                            <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 0.5rem;">-{{ offer.discount_percentage }}%</span>
+                        {% endif %}
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #ff6b35; margin-top: 0.5rem;">
+                            {{ offer.offer_price }}€*
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666;">
+                            Acompte dès {{ offer|get_deposit_amount_filter:offer.offer_price }}€
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{% url 'tourism:offers_list' %}" class="btn-primary" style="background: white; color: #ff6b35; text-decoration: none;">
+                Voir toutes nos offres
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Destinations Section -->
 <section class="section" id="destinations">
@@ -166,7 +230,7 @@
                     <label for="{{ contact_form.email.id_for_label }}">Email</label>
                     {{ contact_form.email }}
                 </div>
-                
+                 
                 <div class="form-group">
                     <label for="{{ contact_form.phone.id_for_label }}">Téléphone</label>
                     {{ contact_form.phone }}

@@ -1,0 +1,31 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}Offres Spéciales - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="section offers-section" style="margin-top: 80px;">
+    <div class="container">
+        <h1 class="section-title" style="color: white;">Offres Spéciales</h1>
+        
+        <div class="offers-grid">
+            {% for offer in special_offers %}
+            <div class="offer-card">
+                <div class="offer-badge">{{ offer.badge_text }}</div>
+                <h3>{{ offer.title }}</h3>
+                <p>{{ offer.description }}</p>
+                {% if offer.conditions %}
+                    <p><strong>{{ offer.conditions }}</strong></p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="{% url 'tourism:offers_list' %}" class="btn-primary" style="background: white; color: #2a5298; text-decoration: none;">
+                Voir nos offres de voyage
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

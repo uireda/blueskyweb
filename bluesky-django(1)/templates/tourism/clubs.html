@@ -1,0 +1,27 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}Nos Clubs - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="section clubs-section" style="margin-top: 80px;">
+    <div class="container">
+        <h1 class="section-title">L'Expérience Blue Sky Tourism</h1>
+        <p style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem; color: #666;">
+            Profitez du meilleur de notre agence : Vols, Hotels, Séjours, Voyages organisés
+        </p>
+        
+        <div class="clubs-grid">
+            {% for service in club_services %}
+            <div class="club-card">
+                <div class="club-icon">
+                    <i class="{{ service.icon_class }}"></i>
+                </div>
+                <h3>{{ service.title }}</h3>
+                <p>{{ service.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,13 +1,14 @@
-from django.urls import path
-from . import views
-
-app_name = 'tourism'
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.home_view, name='home'),
-    path('destinations/', views.DestinationListView.as_view(), name='destinations'),
-    path('destinations/<int:pk>/', views.DestinationDetailView.as_view(), name='destination_detail'),
-    path('clubs/', views.clubs_view, name='clubs'),
-    path('offers/', views.offers_view, name='offers'),
-    path('api/search-destinations/', views.search_destinations_ajax, name='search_destinations_ajax'),
+    path('admin/', admin.site.urls),
+    path('', include('tourism.urls')),
 ]
+
+# Servir les fichiers media et static en développement
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

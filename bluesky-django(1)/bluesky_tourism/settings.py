@@ -110,3 +110,12 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'error',
 }
+
+# Configuration Stripe
+STRIPE_PUBLISHABLE_KEY = 'pk_test_...'  # Clé publique de test Stripe
+STRIPE_SECRET_KEY = 'sk_test_...'       # Clé secrète de test Stripe
+STRIPE_WEBHOOK_SECRET = 'whsec_...'     # Secret webhook (optionnel pour le développement)
+
+# En production, utilisez des variables d'environnement :
+# STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+# STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
