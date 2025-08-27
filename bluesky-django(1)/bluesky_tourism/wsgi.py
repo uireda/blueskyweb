@@ -8,9 +8,12 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
 """
 
 import os
-
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bluesky_tourism.settings')
 
 application = get_wsgi_application()
+
+# Pour Vercel, on peut aussi exposer comme 'app' et 'handler'
+app = application
+handler = application
