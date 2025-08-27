@@ -11,6 +11,10 @@
     {
       "src": "staticfiles/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
