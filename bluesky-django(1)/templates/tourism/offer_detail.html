@@ -1,198 +1,180 @@
 {% extends 'tourism/base.html' %}
 {% load static %}
 
-{% block title %}{{ offer.title }} - Blue Sky Tourism{% endblock %}
+{% block title %}{{ offer.title }} - Demande de réservation{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-white">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb bg-transparent">
-                        <li class="breadcrumb-item"><a href="{% url 'offers_list' %}" class="text-white">Offres</a></li>
-                        <li class="breadcrumb-item active text-white">{{ offer.title }}</li>
-                    </ol>
-                </nav>
-                <h1 class="display-4 mb-3">{{ offer.title }}</h1>
-                <p class="lead">{{ offer.destination.name }} • {{ offer.duration_nights }} nuits / {{ offer.duration_days }} jours</p>
-            </div>
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1 class="display-5 fw-bold mb-2">{{ offer.title }}</h1>
+        <div class="mb-3">
+          {% for destination in offer.destinations.all %}
+            <span class="badge rounded-pill bg-info me-2 px-3 py-2">{{ destination.name }}</span>
+          {% endfor %}
+          {% for hotel in offer.hotels.all %}
+            <span class="badge rounded-pill bg-secondary me-2 px-3 py-2">{{ hotel.name }}</span>
+          {% endfor %}
         </div>
+        <p class="lead mb-0">
+          <i class="fas fa-calendar-alt"></i> {{ offer.departure_date|date:"d/m/Y" }} → {{ offer.return_date|date:"d/m/Y" }}
+        </p>
+      </div>
+      <div class="col-lg-5 text-center">
+        {% if offer.image %}
+          <img src="{{ offer.image.url }}" class="img-fluid rounded shadow-lg border border-3 border-white" alt="{{ offer.title }}" style="max-height: 250px; object-fit: cover;">
+        {% endif %}
+      </div>
     </div>
-</div>
+  </div>
+</section>
 
 <div class="container py-5">
-    <div class="row">
-        <!-- Colonne principale -->
-        <div class="col-lg-8">
-            <!-- Image principale -->
-            {% if offer.image %}
-            <img src="{{ offer.image.url }}" class="img-fluid rounded mb-4" alt="{{ offer.title }}">
-            {% endif %}
-            
-            <!-- Description -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3>Description</h3>
-                    <p>{{ offer.description }}</p>
-                </div>
-            </div>
-            
-            <!-- Services inclus/exclus -->
-            <div class="row mb-4">
-                {% if offer.included_services_list %}
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="text-success"><i class="fas fa-check-circle"></i> Services inclus</h5>
-                            <ul class="list-unstyled">
-                                {% for service in offer.included_services_list %}
-                                <li><i class="fas fa-check text-success me-2"></i>{{ service }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                
-                {% if offer.excluded_services_list %}
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="text-danger"><i class="fas fa-times-circle"></i> Services non inclus</h5>
-                            <ul class="list-unstyled">
-                                {% for service in offer.excluded_services_list %}
-                                <li><i class="fas fa-times text-danger me-2"></i>{{ service }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Conditions -->
-            {% if offer.conditions %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5><i class="fas fa-info-circle text-info"></i> Conditions particulières</h5>
-                    <p>{{ offer.conditions }}</p>
-                </div>
-            </div>
-            {% endif %}
+  <div class="row g-4">
+    <!-- Colonne principale -->
+    <div class="col-lg-8">
+      <!-- Description -->
+      <div class="card shadow mb-4">
+        <div class="card-body">
+          <h3 class="fw-bold mb-3 text-primary">Description</h3>
+          <p class="fs-5">{{ offer.description }}</p>
         </div>
-        
-        <!-- Sidebar réservation -->
-        <div class="col-lg-4">
-            <div class="card sticky-top" style="top: 20px;">
-                <div class="card-body">
-                    <!-- Prix -->
-                    <div class="text-center mb-4">
-                        {% if offer.discount_percentage > 0 %}
-                        <span class="badge bg-success mb-2">-{{ offer.discount_percentage }}% de réduction</span>
-                        <br>
-                        <span class="text-muted text-decoration-line-through h6">{{ offer.original_price }}€</span>
-                        {% endif %}
-                        <div class="h2 text-primary mb-0">{{ offer.offer_price }}€</div>
-                        <small class="text-muted">par personne</small>
-                    </div>
-                    
-                    <!-- Informations voyage -->
-                    <div class="mb-4">
-                        <h6>Informations du voyage</h6>
-                        <ul class="list-unstyled small">
-                            <li><i class="fas fa-calendar text-primary me-2"></i>Départ : {{ offer.departure_date|date:"d/m/Y" }}</li>
-                            <li><i class="fas fa-calendar text-primary me-2"></i>Retour : {{ offer.return_date|date:"d/m/Y" }}</li>
-                            <li><i class="fas fa-users text-primary me-2"></i>{{ offer.available_spots }} places disponibles</li>
-                            <li><i class="fas fa-user-friends text-primary me-2"></i>Min. {{ offer.min_participants }} participants</li>
-                            {% if offer.booking_deadline %}
-                            <li><i class="fas fa-clock text-warning me-2"></i>Réservation avant le {{ offer.booking_deadline|date:"d/m/Y" }}</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                    
-                    <!-- Options de paiement -->
-                    <div class="mb-4">
-                        <h6>Options de paiement</h6>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="border rounded p-2">
-                                    <div class="h6 text-info">Acompte</div>
-                                    <div class="h5">{{ offer.get_deposit_amount:offer.offer_price }}€</div>
-                                    {% if offer.deposit_percentage %}
-                                    <small class="text-muted">({{ offer.deposit_percentage }}%)</small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="border rounded p-2">
-                                    <div class="h6 text-success">Intégral</div>
-                                    <div class="h5">{{ offer.offer_price }}€</div>
-                                    <small class="text-muted">Paiement complet</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {% if offer.is_available %}
-                    <!-- Formulaire de réservation -->
-                    <form method="post">
-                        {% csrf_token %}
-                        <h6 class="mb-3">Réserver cette offre</h6>
-                        
-                        <div class="mb-3">
-                            {{ form.client_name.label_tag }}
-                            {{ form.client_name }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.client_email.label_tag }}
-                            {{ form.client_email }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.client_phone.label_tag }}
-                            {{ form.client_phone }}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.participants_count.label_tag }}
-                            {{ form.participants_count }}
-                            {% if form.participants_count.help_text %}
-                            <small class="form-text text-muted">{{ form.participants_count.help_text }}</small>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.special_requests.label_tag }}
-                            {{ form.special_requests }}
-                        </div>
-                        
-                        <div class="mb-4">
-                            {{ form.payment_type.label_tag }}
-                            {% for radio in form.payment_type %}
-                            <div class="form-check">
-                                {{ radio.tag }}
-                                <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                    {{ radio.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary w-100">
-                            Procéder au paiement
-                        </button>
-                    </form>
-                    {% else %}
-                    <div class="alert alert-warning text-center">
-                        <h6>Offre non disponible</h6>
-                        <p class="mb-0">Cette offre n'est plus disponible ou complète.</p>
-                    </div>
-                    {% endif %}
-                </div>
+      </div>
+
+      <!-- Hôtels proposés -->
+      {% if offer.hotels.all %}
+      <div class="card shadow mb-4">
+        <div class="card-body">
+          <h4 class="fw-bold mb-3 text-primary">Hôtels proposés</h4>
+          <div class="row g-3">
+            {% for hotel in offer.hotels.all %}
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h5 class="mb-1">{{ hotel.name }}</h5>
+                {% if hotel.category %}
+                  <div class="mb-1"><span class="badge bg-info">{{ hotel.category }}</span></div>
+                {% endif %}
+                {% if hotel.address %}
+                  <div class="mb-1 text-muted"><i class="fas fa-map-marker-alt"></i> {{ hotel.address }}</div>
+                {% endif %}
+                {% if hotel.phone %}
+                  <div class="mb-1 text-muted"><i class="fas fa-phone"></i> {{ hotel.phone }}</div>
+                {% endif %}
+                {% if hotel.image %}
+                  <img src="{{ hotel.image.url }}" class="img-fluid rounded mb-2" alt="{{ hotel.name }}">
+                {% endif %}
+                {% if hotel.description %}
+                  <div class="small mb-2">{{ hotel.description }}</div>
+                {% endif %}
+                {% if hotel.amenities_list %}
+                  <div class="mb-2">
+                    <strong>Équipements :</strong>
+                    <ul class="list-inline mb-0">
+                      {% for eq in hotel.amenities_list %}
+                        <li class="list-inline-item badge bg-secondary mb-1">{{ eq }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+              </div>
             </div>
+            {% endfor %}
+          </div>
         </div>
+      </div>
+      {% endif %}
+
+      <!-- Inclus / Non inclus -->
+      <div class="row mb-4">
+        {% if offer.included_services_list %}
+        <div class="col-md-6 mb-3">
+          <div class="card h-100 border-success shadow">
+            <div class="card-body">
+              <h5 class="text-success fw-bold"><i class="fas fa-check-circle"></i> Inclus dans l’offre</h5>
+              <ul class="list-unstyled mb-0">
+                {% for service in offer.included_services_list %}
+                <li><i class="fas fa-check text-success me-2"></i>{{ service }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if offer.excluded_services_list %}
+        <div class="col-md-6 mb-3">
+          <div class="card h-100 border-danger shadow">
+            <div class="card-body">
+              <h5 class="text-danger fw-bold"><i class="fas fa-times-circle"></i> Non inclus</h5>
+              <ul class="list-unstyled mb-0">
+                {% for service in offer.excluded_services_list %}
+                <li><i class="fas fa-times text-danger me-2"></i>{{ service }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Conditions particulières -->
+      {% if offer.conditions %}
+      <div class="card mb-4 border-info shadow">
+        <div class="card-body">
+          <h5 class="fw-bold"><i class="fas fa-info-circle text-info"></i> Conditions particulières</h5>
+          <p>{{ offer.conditions|linebreaksbr }}</p>
+        </div>
+      </div>
+      {% endif %}
     </div>
+    <!-- Sidebar réservation -->
+    <div class="col-lg-4">
+      <div class="card sticky-top shadow-lg" style="top: 30px;">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <div class="h2 text-primary mb-0 fw-bold">{{ offer.offer_price }}€</div>
+            <small class="text-muted">par personne</small>
+          </div>
+          {% if offer.is_available %}
+          <form method="post">
+            {% csrf_token %}
+            <h6 class="mb-3 fw-bold">Demande de réservation</h6>
+            <div class="mb-3">
+              {{ form.client_name.label_tag }}
+              {{ form.client_name }}
+            </div>
+            <div class="mb-3">
+              {{ form.client_email.label_tag }}
+              {{ form.client_email }}
+            </div>
+            <div class="mb-3">
+              {{ form.client_phone.label_tag }}
+              {{ form.client_phone }}
+            </div>
+            <div class="mb-3">
+              {{ form.participants_count.label_tag }}
+              {{ form.participants_count }}
+              {% if form.participants_count.help_text %}
+              <small class="form-text text-muted">{{ form.participants_count.help_text }}</small>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              {{ form.special_requests.label_tag }}
+              {{ form.special_requests }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold">
+              Envoyer la demande
+            </button>
+          </form>
+          {% else %}
+          <div class="alert alert-warning text-center">
+            <h6>Offre non disponible</h6>
+            <p class="mb-0">Cette offre n'est plus disponible ou complète.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

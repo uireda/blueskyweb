@@ -4,82 +4,11 @@
 {% block title %}Paiement confirmé - Blue Sky Tourism{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 text-center">
-            <div class="card">
-                <div class="card-body py-5">
-                    <div class="mb-4">
-                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                    </div>
-                    
-                    <h1 class="text-success mb-4">Paiement confirmé !</h1>
-                    
-                    <div class="alert alert-success">
-                        <h4>Merci {{ reservation.client_name }} !</h4>
-                        <p class="mb-0">
-                            Votre 
-                            {% if reservation.payment_type == 'deposit' %}
-                            acompte de {{ reservation.deposit_amount }}€
-                            {% else %}
-                            paiement de {{ reservation.total_price }}€
-                            {% endif %}
-                            a été traité avec succès.
-                        </p>
-                    </div>
-                    
-                    <div class="row text-start">
-                        <div class="col-md-6">
-                            <h5>Détails de votre réservation</h5>
-                            <ul class="list-unstyled">
-                                <li><strong>Offre :</strong> {{ reservation.offer.title }}</li>
-                                <li><strong>Destination :</strong> {{ reservation.offer.destination.name }}</li>
-                                <li><strong>Dates :</strong> {{ reservation.offer.departure_date|date:"d/m/Y" }} - {{ reservation.offer.return_date|date:"d/m/Y" }}</li>
-                                <li><strong>Participants :</strong> {{ reservation.participants_count }}</li>
-                                <li><strong>Statut :</strong> 
-                                    {% if reservation.status == 'deposit_paid' %}
-                                    <span class="badge bg-info">Acompte payé</span>
-                                    {% elif reservation.status == 'paid' %}
-                                    <span class="badge bg-success">Payé intégralement</span>
-                                    {% endif %}
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Récapitulatif financier</h5>
-                            <ul class="list-unstyled">
-                                <li>Prix total : {{ reservation.total_price }}€</li>
-                                {% if reservation.payment_type == 'deposit' %}
-                                <li class="text-success">Acompte payé : {{ reservation.deposit_amount }}€</li>
-                                <li class="text-warning">Solde restant : {{ reservation.remaining_amount }}€</li>
-                                {% else %}
-                                <li class="text-success">Paiement intégral : {{ reservation.total_price }}€</li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    {% if reservation.payment_type == 'deposit' %}
-                    <div class="alert alert-info mt-4">
-                        <h6><i class="fas fa-info-circle"></i> Information importante</h6>
-                        <p class="mb-0">
-                            Le solde restant de {{ reservation.remaining_amount }}€ devra être réglé avant votre départ. 
-                            Nous vous contacterons prochainement pour finaliser votre réservation.
-                        </p>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="mt-4">
-                        <p class="text-muted">
-                            Un email de confirmation a été envoyé à {{ reservation.client_email }}
-                        </p>
-                        <a href="{% url 'offers_list' %}" class="btn btn-primary">
-                            Retour aux offres
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Paiement confirmé</h1>
+    <p class="lead mb-4">Merci pour votre réservation ! Un email de confirmation vous a été envoyé.</p>
+    <a href="{% url 'tourism:home' %}" class="btn btn-warning btn-lg rounded-pill fw-bold mt-3">Retour à l'accueil</a>
+  </div>
+</section>
 {% endblock %}

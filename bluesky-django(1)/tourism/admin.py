@@ -19,14 +19,30 @@ class DestinationAdmin(admin.ModelAdmin):
     search_fields = ['name', 'location']
     list_editable = ['is_featured']
     filter_horizontal = ['hotels']
+    fields = ['name', 'location', 'description', 'hotels', 'duration_days', 'duration_nights', 'package_type', 'departure_city', 'original_price', 'current_price', 'image', 'icon_class', 'is_featured']
 
 @admin.register(TravelOffer)
 class TravelOfferAdmin(admin.ModelAdmin):
-    list_display = ['title', 'destination', 'departure_date', 'offer_price', 'max_participants', 'available_spots_display', 'is_active', 'is_featured']
-    list_filter = ['offer_type', 'is_active', 'is_featured', 'departure_date']
-    search_fields = ['title', 'destination__name']
-    list_editable = ['is_active', 'is_featured']
-    date_hierarchy = 'departure_date'
+    list_display = [
+        'title',
+        'get_destinations',  # Correction ici
+        'departure_date',
+        'offer_price',
+        'max_participants',
+        'available_spots_display',
+        'is_active',
+        'is_featured'
+    ]
+    list_filter = [
+        'is_active',
+        'is_featured',
+        'departure_date'
+    ]  # Retire 'offer_type' si le champ n'existe pas
+
+    # Ajoute la méthode pour afficher les destinations
+    def get_destinations(self, obj):
+        return ", ".join([d.name for d in obj.destinations.all()])
+    get_destinations.short_description = "Destinations"
     
     def available_spots_display(self, obj):
         return f"{obj.available_spots}/{obj.max_participants}"
@@ -34,7 +50,7 @@ class TravelOfferAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Informations générales', {
-            'fields': ('title', 'description', 'destination', 'offer_type', 'image')
+            'fields': ('title', 'description', 'destinations', 'hotels', 'image')  # <-- AJOUT description
         }),
         ('Dates', {
             'fields': ('departure_date', 'return_date', 'booking_deadline')
@@ -57,7 +73,8 @@ class TravelOfferAdmin(admin.ModelAdmin):
 
 @admin.register(OfferReservation)
 class OfferReservationAdmin(admin.ModelAdmin):
-    list_display = ['client_name', 'offer', 'participants_count', 'total_price', 'deposit_amount', 'status', 'created_at']
+    list_display = ['client_name', 'offer', 'participants_count', 'total_price', 'deposit_amount', 'status', 'created_at'
+]
     list_filter = ['status', 'payment_type', 'created_at']
     search_fields = ['client_name', 'client_email', 'offer__title']
     readonly_fields = ['total_price', 'deposit_amount', 'remaining_amount']

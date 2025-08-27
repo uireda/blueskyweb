@@ -1,27 +1,39 @@
 {% extends 'tourism/base.html' %}
 {% load static %}
 
-{% block title %}Nos Clubs - Blue Sky Tourism{% endblock %}
+{% block title %}Clubs - Blue Sky Tourism{% endblock %}
 
 {% block content %}
-<section class="section clubs-section" style="margin-top: 80px;">
-    <div class="container">
-        <h1 class="section-title">L'Expérience Blue Sky Tourism</h1>
-        <p style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem; color: #666;">
-            Profitez du meilleur de notre agence : Vols, Hotels, Séjours, Voyages organisés
-        </p>
-        
-        <div class="clubs-grid">
-            {% for service in club_services %}
-            <div class="club-card">
-                <div class="club-icon">
-                    <i class="{{ service.icon_class }}"></i>
-                </div>
-                <h3>{{ service.title }}</h3>
-                <p>{{ service.description }}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Nos Clubs</h1>
+    <p class="lead mb-4">Découvrez nos clubs exclusifs pour des séjours encore plus personnalisés.</p>
+  </div>
 </section>
+<div class="container py-5">
+  <div class="row g-4">
+    {% for club in clubs %}
+    <div class="col-lg-4 col-md-6">
+      <div class="card shadow-sm h-100">
+        {% if club.image %}
+          <img src="{{ club.image.url }}" class="card-img-top" alt="{{ club.name }}">
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-bold">{{ club.name }}</h5>
+          <p class="mb-2">{{ club.description|truncatewords:20 }}</p>
+          <div class="mt-auto">
+            <a href="{% url 'tourism:club_detail' club.id %}" class="btn btn-primary w-100 rounded-pill">Voir le club</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">
+        <h4>Aucun club disponible</h4>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}

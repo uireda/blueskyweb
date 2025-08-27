@@ -37,6 +37,7 @@ class Hotel(models.Model):
 class Destination(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom de la destination")
     location = models.CharField(max_length=200, verbose_name="Lieu")
+    description = models.TextField(verbose_name="Description", blank=True)  # <-- AJOUT ICI
     hotels = models.ManyToManyField('Hotel', verbose_name="Hôtels", related_name="destinations", blank=True)
     duration_days = models.IntegerField(verbose_name="Durée en jours")
     duration_nights = models.IntegerField(verbose_name="Durée en nuits")
@@ -83,31 +84,18 @@ class Destination(models.Model):
         return [(hotel.name, hotel.rating) for hotel in self.hotels.all()]
 
 class TravelOffer(models.Model):
-    """Modèle pour les offres de voyage avec dates et prix fixes"""
-    OFFER_TYPES = [
-        ('early_bird', 'Réservation Anticipée'),
-        ('last_minute', 'Dernière Minute'),
-        ('group', 'Offre Groupe'),
-        ('family', 'Offre Famille'),
-        ('honeymoon', 'Voyage de Noces'),
-        ('senior', 'Offre Senior'),
-        ('student', 'Offre Étudiant'),
-    ]
-
-    title = models.CharField(max_length=200, verbose_name="Titre de l'offre")
-    description = models.TextField(verbose_name="Description")
-    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, verbose_name="Destination", related_name="travel_offers")
-    offer_type = models.CharField(max_length=20, choices=OFFER_TYPES, verbose_name="Type d'offre")
-    
-    # Dates fixes
+    title = models.CharField(max_length=200)
+    description = models.TextField(verbose_name="Description", blank=True)  # <-- AJOUT ICI
+    destinations = models.ManyToManyField('Destination', related_name='offers', verbose_name="Destinations")
+    hotels = models.ManyToManyField('Hotel', related_name='offers', verbose_name="Hôtels")
     departure_date = models.DateField(verbose_name="Date de départ")
     return_date = models.DateField(verbose_name="Date de retour")
+    offer_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix par personne")
     
     # Prix et capacité
     original_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix original par personne")
-    offer_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix de l'offre par personne")
-    max_participants = models.IntegerField(verbose_name="Nombre maximum de participants")
     min_participants = models.IntegerField(default=1, verbose_name="Nombre minimum de participants")
+    max_participants = models.IntegerField(verbose_name="Nombre maximum de participants")
     
     # Acompte
     deposit_percentage = models.DecimalField(
@@ -184,6 +172,13 @@ class TravelOffer(models.Model):
         if self.deposit_amount:
             return self.deposit_amount
         return (total_price * self.deposit_percentage) / 100
+
+    @property
+    def calculated_deposit_amount(self):
+        """Calcule et retourne le montant de l'acompte pour cette offre"""
+        if self.deposit_amount:
+            return self.deposit_amount
+        return (self.offer_price * self.deposit_percentage) / 100
 
     @property
     def included_services_list(self):
@@ -447,7 +442,13 @@ class SearchQuery(models.Model):
     class Meta:
         verbose_name = "Recherche"
         verbose_name_plural = "Recherches"
-        ordering = ['-created_at']
+        ordering = ['-created_at'] 
 
     def __str__(self):
         return f"Recherche {self.destination} - {self.departure_date}"
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

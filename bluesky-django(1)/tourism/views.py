@@ -11,7 +11,7 @@ from .models import (
     Destination, ClubService, SpecialOffer, Testimonial, 
     TravelOffer, OfferReservation, Payment, Reservation, SearchQuery
 )
-from .forms import SearchForm, ContactForm, OfferReservationForm
+from .forms import SearchForm, ContactForm, OfferReservationForm, DestinationReservationForm
 import stripe
 import json
 
@@ -47,6 +47,7 @@ def home_view(request):
             try:
                 send_mail(
                     subject=f"Contact BlueSky: {contact_form.cleaned_data['subject']}",
+
                     message=f"""
                     Nouveau message de contact:
                     
@@ -106,14 +107,54 @@ class DestinationListView(ListView):
 class DestinationDetailView(DetailView):
     """Vue pour les détails d'une destination"""
     model = Destination
-    template_name = 'tourism/destination_detail.html'
+    template_name = 'tourism/destination_detail_working.html'  # Nouveau template
     context_object_name = 'destination'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Ajouter un formulaire de réservation vide pour l'affichage
-        context['reservation_form'] = None  # Sera implémenté plus tard
+        # Ajouter un formulaire de réservation
+        context['reservation_form'] = DestinationReservationForm(destination=self.object)
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = DestinationReservationForm(request.POST, destination=self.object)
+        
+        if form.is_valid():
+            reservation = form.save(commit=False)
+            reservation.destination = self.object
+            reservation.save()
+            
+            # Envoyer un email de confirmation (optionnel)
+            try:
+                send_mail(
+                    subject=f"Nouvelle demande de réservation - {reservation.destination.name}",
+                    message=f"""
+                    Nouvelle demande de réservation:
+                    
+                    Client: {reservation.client_name}
+                    Email: {reservation.client_email}
+                    Téléphone: {reservation.client_phone}
+                    Destination: {reservation.destination.name}
+                    Date de départ: {reservation.departure_date}
+                    Nombre de voyageurs: {reservation.travelers_count}
+                    Hôtel préféré: {reservation.hotel_preference or 'Aucune préférence'}
+                    Demandes spéciales: {reservation.special_requests or 'Aucune'}
+                    Prix estimé: {reservation.estimated_total}€
+                    """,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=['bluesky13001@gmail.com'],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+            
+            messages.success(request, f'Votre demande de réservation pour {reservation.destination.name} a été envoyée avec succès! Nous vous contacterons rapidement.')
+            return redirect('tourism:destination_detail', pk=self.object.pk)
+        else:
+            context = self.get_context_data()
+            context['reservation_form'] = form
+            return self.render_to_response(context)
 
 def clubs_view(request):
     """Vue pour la page des clubs"""
@@ -175,32 +216,26 @@ def offers_list(request):
     
     context = {
         'offers': offers,
-        'offer_types': TravelOffer.OFFER_TYPES,
         'selected_type': offer_type,
     }
     return render(request, 'tourism/offers_list.html', context)
 
 def offer_detail(request, offer_id):
     """Détail d'une offre avec formulaire de réservation"""
-    offer = get_object_or_404(TravelOffer, id=offer_id, is_active=True)
-    
-    if request.method == 'POST':
-        form = OfferReservationForm(request.POST, offer=offer)
+    offer = get_object_or_404(TravelOffer, pk=offer_id)
+    if request.method == "POST":
+        form = OfferReservationForm(request.POST)
         if form.is_valid():
             reservation = form.save(commit=False)
             reservation.offer = offer
+            reservation.status = 'pending'  # ou autre valeur par défaut
             reservation.save()
-            
-            # Rediriger vers la page de paiement
-            return redirect('tourism:offer_payment', reservation_id=reservation.id)
+            # Optionnel : message de confirmation
+            messages.success(request, "Votre demande de réservation a bien été enregistrée.")
+            return redirect('tourism:offer_payment_success')
     else:
-        form = OfferReservationForm(offer=offer)
-    
-    context = {
-        'offer': offer,
-        'form': form,
-    }
-    return render(request, 'tourism/offer_detail.html', context)
+        form = OfferReservationForm()
+    return render(request, 'tourism/offer_detail.html', {'offer': offer, 'form': form})
 
 def offer_payment(request, reservation_id):
     """Page de paiement pour une réservation d'offre"""
@@ -341,3 +376,13 @@ def stripe_webhook(request):
             pass
     
     return JsonResponse({'status': 'success'})
+
+def contact_view(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()  # ou traite comme tu veux
+            return redirect('tourism:home')
+    else:
+        form = ContactForm()
+    return render(request, 'tourism/home.html', {'contact_form': form})

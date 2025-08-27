@@ -25,4 +25,7 @@ urlpatterns = [
     
     # Webhook Stripe
     path('stripe/webhook/', views.stripe_webhook, name='stripe_webhook'),
+    
+    # Page de contact
+    path('contact/', views.contact_view, name='contact'),
 ]
