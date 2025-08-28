@@ -3,28 +3,16 @@
   "builds": [
     {
       "src": "bluesky_tourism/wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb"
-      }
-    },
-    {
-      "src": "staticfiles/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "app.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/staticfiles/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "bluesky_tourism/wsgi.py"
     }
-  ]
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "bluesky_tourism.settings"
+  }
 }

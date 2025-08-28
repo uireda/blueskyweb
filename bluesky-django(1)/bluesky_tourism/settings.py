@@ -1,6 +1,14 @@
 import os
 from pathlib import Path
 
+# Configuration spécifique pour Vercel
+if 'VERCEL' in os.environ:
+    DEBUG = False
+    # Collecte des fichiers statiques automatiquement
+    import django
+    from django.core.management import execute_from_command_line
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bluesky_tourism.settings')
+    django.setup()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

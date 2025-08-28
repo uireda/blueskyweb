@@ -1,19 +1,12 @@
-"""
-WSGI config for bluesky_tourism project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
-"""
-
 import os
 from django.core.wsgi import get_wsgi_application
 
+# Important : définir la variable d'environnement AVANT d'importer quoi que ce soit de Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bluesky_tourism.settings')
 
+# Pour Vercel, on doit s'assurer que Django est configuré
 application = get_wsgi_application()
 
-# Pour Vercel, on peut aussi exposer comme 'app' et 'handler'
+# Vercel cherche ces variables
 app = application
 handler = application
