@@ -29,4 +29,4 @@ EXPOSE 8000
 # Commande de démarrage
 ENV DJANGO_SETTINGS_MODULE=bluesky_tourism.settings
 
-CMD ["gunicorn", "bluesky_tourism.wsgi:application", "--bind", "0.0.0.0:$PORT", "--timeout", "120", "--log-level", "debug"]
+CMD sh -c "gunicorn bluesky_tourism.wsgi:application --bind 0.0.0.0:${PORT} --timeout 120 --log-level debug"
