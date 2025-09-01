@@ -1,32 +1,35 @@
+# Utiliser une image Python légère
 FROM python:3.11-slim
 
 # Variables d'environnement
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+ENV PORT=8000  # Valeur par défaut pour tests locaux
 
-# Créer un dossier de travail
+# Définir le répertoire de travail
 WORKDIR /app
 
 # Installer les dépendances système
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential libpq-dev && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copier et installer requirements
+# Copier et installer les dépendances Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le code
+# Copier tout le projet
 COPY . .
 
 # Collecter les fichiers statiques
 RUN python manage.py collectstatic --noinput
 
-# Exposer le port (optionnel pour Railway)
+# Exposer le port
 EXPOSE 8000
 
-# Commande de démarrage
-ENV DJANGO_SETTINGS_MODULE=bluesky_tourism.settings
-
+# Démarrer Gunicorn (avec expansion de la variable $PORT)
 CMD sh -c "gunicorn bluesky_tourism.wsgi:application --bind 0.0.0.0:${PORT} --timeout 120 --log-level debug"
