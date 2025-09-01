@@ -5,7 +5,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
-ENV PORT=8000  # Valeur par défaut pour tests locaux
+ENV PORT=8000
 
 # Définir le répertoire de travail
 WORKDIR /app
@@ -31,5 +31,5 @@ RUN python manage.py collectstatic --noinput
 # Exposer le port
 EXPOSE 8000
 
-# Démarrer Gunicorn (avec expansion de la variable $PORT)
+# Démarrer Gunicorn
 CMD sh -c "gunicorn bluesky_tourism.wsgi:application --bind 0.0.0.0:${PORT} --timeout 120 --log-level debug"
