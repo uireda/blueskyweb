@@ -27,4 +27,4 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Commande de démarrage
-CMD sh -c "python -m gunicorn bluesky_tourism.wsgi:application --bind 0.0.0.0:\$PORT"
+CMD sh -c "python -m gunicorn bluesky_tourism.wsgi:application --bind 0.0.0.0:\$PORT --timeout 120 --log-level debug"
