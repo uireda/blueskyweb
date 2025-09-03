@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: bluesky-django
+    env: python
+    rootDir: bluesky-django
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    startCommand: "gunicorn bluesky_tourism.wsgi:application"
