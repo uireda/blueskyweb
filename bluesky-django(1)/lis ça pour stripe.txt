@@ -1,3 +1,0 @@
-**Mettez à jour vos settings** :
-
-- Remplacez `STRIPE_PUBLISHABLE_KEY` et `STRIPE_SECRET_KEY` dans `settings.py`
