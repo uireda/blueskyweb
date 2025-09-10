@@ -1,0 +1,14 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}Paiement confirmé - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Paiement confirmé</h1>
+    <p class="lead mb-4">Merci pour votre réservation ! Un email de confirmation vous a été envoyé.</p>
+    <a href="{% url 'tourism:home' %}" class="btn btn-warning btn-lg rounded-pill fw-bold mt-3">Retour à l'accueil</a>
+  </div>
+</section>
+{% endblock %}

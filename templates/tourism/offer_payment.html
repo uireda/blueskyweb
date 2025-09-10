@@ -1,0 +1,37 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+{% block title %}Paiement de l'offre - Blue Sky Tourism{% endblock %}
+{% block content %}
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Paiement de l'offre</h1>
+    <p class="lead mb-4">Finalisez votre réservation en toute sécurité.</p>
+  </div>
+</section>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow-lg">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Récapitulatif</h5>
+          <ul class="list-group mb-4">
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Offre</span>
+              <span>{{ offer.title }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Montant à payer</span>
+              <span class="fw-bold text-primary">{{ amount }} €</span>
+            </li>
+          </ul>
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold">Payer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

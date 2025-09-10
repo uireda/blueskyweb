@@ -1,0 +1,62 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}Toutes nos offres - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Toutes nos offres</h1>
+    <p class="lead mb-4">Retrouvez ici l’ensemble de nos séjours et promotions du moment.</p>
+  </div>
+</section>
+<div class="container py-5">
+  <div class="row g-4">
+    {% for offer in offers %}
+    <div class="col-lg-4 col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="position-relative">
+          {% if offer.image %}
+            <img src="{{ offer.image.url }}" class="card-img-top" alt="{{ offer.title }}">
+          {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+              <i class="fas fa-image fa-3x text-muted"></i>
+            </div>
+          {% endif %}
+          {% if offer.discount_percentage > 0 %}
+            <span class="badge bg-danger position-absolute top-0 end-0 m-2">-{{ offer.discount_percentage }}%</span>
+          {% endif %}
+          {% if offer.is_featured %}
+            <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">Vedette</span>
+          {% endif %}
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-bold">{{ offer.title }}</h5>
+          <p class="card-text text-muted mb-2"><i class="fas fa-map-marker-alt"></i>
+            {% for d in offer.destinations.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </p>
+          <p class="mb-2">{{ offer.description|truncatewords:20 }}</p>
+          <div class="mt-auto">
+            <div class="d-flex align-items-center mb-2">
+              {% if offer.discount_percentage > 0 %}
+                <span class="text-muted text-decoration-line-through me-2">{{ offer.original_price }}€</span>
+              {% endif %}
+              <span class="h5 text-primary mb-0">{{ offer.offer_price }}€</span>
+              <small class="text-muted ms-1">/pers.</small>
+            </div>
+            <a href="{% url 'tourism:offer_detail' offer.id %}" class="btn btn-primary w-100 rounded-pill">Voir & Réserver</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">
+        <h4>Aucune offre disponible</h4>
+        <p>Il n'y a actuellement aucune offre correspondant à vos critères.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

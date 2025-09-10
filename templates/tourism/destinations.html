@@ -1,0 +1,44 @@
+{% extends 'tourism/base.html' %}
+{% load static %}
+
+{% block title %}Destinations - Blue Sky Tourism{% endblock %}
+
+{% block content %}
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Nos Destinations</h1>
+    <p class="lead mb-4">Découvrez nos destinations phares pour des séjours inoubliables.</p>
+  </div>
+</section>
+<div class="container py-5">
+  <div class="row g-4">
+    {% for destination in destinations %}
+    <div class="col-lg-4 col-md-6">
+      <div class="card shadow-sm h-100">
+        {% if destination.image %}
+          <img src="{{ destination.image.url }}" class="card-img-top" alt="{{ destination.name }}">
+        {% else %}
+          <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+            <i class="fas fa-image fa-3x text-muted"></i>
+          </div>
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-bold">{{ destination.name }}</h5>
+          <p class="card-text text-muted mb-2"><i class="fas fa-map-marker-alt"></i> {{ destination.location }}</p>
+          <p class="mb-2">{{ destination.description|truncatewords:20 }}</p>
+          <div class="mt-auto">
+            <a href="{% url 'tourism:destination_detail' destination.id %}" class="btn btn-primary w-100 rounded-pill">Voir la destination</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">
+        <h4>Aucune destination disponible</h4>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
