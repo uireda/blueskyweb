@@ -1,6 +1,8 @@
 # Utiliser une image Python légère
 FROM python:3.11-slim
 
+RUN pip install --upgrade pip setuptools wheel
+
 # Variables d'environnement
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
